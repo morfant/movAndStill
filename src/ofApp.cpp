@@ -2,6 +2,15 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    
+    // IMAGES
+    infoDrawing[0].load("images/infoDrawing_0.jpg");
+    infoDrawing[1].load("images/infoDrawing_1.jpg");
+    infoDrawing[2].load("images/infoDrawing_2.jpg");
+    infoDrawing[3].load("images/infoDrawing_3.jpg");
+//    infoDrawing[4].load("images/infoDrawing_3.jpg");
+    
+    // CAMERA
     camWidth = 320;  // try to grab at this size.
     camHeight = 240;
 
@@ -23,6 +32,10 @@ void ofApp::setup(){
 //    videoInverted.allocate(camWidth, camHeight, OF_PIXELS_RGB);
 //    videoTexture.allocate(videoInverted);
     ofSetVerticalSync(true);
+    
+    
+    
+   
 }
 
 
@@ -30,33 +43,46 @@ void ofApp::setup(){
 void ofApp::update(){
     ofBackground(0, 0, 0);
     
-    
-    curTimef = ofGetElapsedTimef();
-    timeDiff = curTimef - prevTimef;
-    if (timeDiff >= stillCutInterval) {
-        vidGrabber.update();
-        prevTimef = curTimef;
+    if (!imageMode) {
+        // first video update - NOT WORKING!!
+        if (curTimef == 0.0f){
+            vidGrabber.update();
+            ofLog(OF_LOG_NOTICE, "first video updated!");
+        }
+        
+        if (stillCutMode) {
+            // Insert interval between frames
+            curTimef = ofGetElapsedTimef();
+            timeDiff = curTimef - prevTimef;
+            if (timeDiff >= stillCutInterval) {
+                vidGrabber.update();
+                prevTimef = curTimef;
+            }
+        } else {
+            vidGrabber.update();
+        }
+    } else if (imageMode) {
+        
     }
 
-//    if(vidGrabber.isFrameNew()){
-//        ofPixels & pixels = vidGrabber.getPixels();
-//        for(int i = 0; i < pixels.size(); i++){
-//            videoInverted[i] = 255 - pixels[i];
-//        }
-//        videoTexture.loadData(videoInverted);
-//    }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    vidGrabber.draw(20, 20);
-//    videoTexture.draw(20 + camWidth, 20, camWidth, camHeight);
     
+    if (!imageMode) {
+        vidGrabber.draw(20, 20);
+    
+    } else if (imageMode) {
+        infoDrawing[curImageIdx].draw(0, 0, ofGetWidth(), ofGetHeight());
+//        infoDrawing[curImageIdx].draw(0, 0);
+    }
     
     
     ofSetHexColor(0xffffff);
     ofDrawBitmapString(stillCutMode_str, margin_left, ofGetHeight() - margin_bottom);
-    ofDrawBitmapString(ofToString(roundf(timeDiff*100)/100) + " / " + ofToString(stillCutInterval), margin_left + 250, ofGetHeight() - margin_bottom);
+    ofDrawBitmapString(ofToString(roundf(timeDiff*100)/100) + " / " + ofToString(stillCutInterval) +
+                       " curImgIdx: " + ofToString(curImageIdx), margin_left + 250, ofGetHeight() - margin_bottom);
 //    ofDrawBitmapString(ofToString(stillCutInterval), margin_left + 500, ofGetHeight() - margin_bottom);
 }
 
@@ -74,7 +100,9 @@ void ofApp::keyPressed(int key){
     // For Xcode 4.4 and greater, see this forum post on instructions on installing the SDK
     // http://forum.openframeworks.cc/index.php?topic=10343
     if(key == 's' || key == 'S'){
-        stillCutMode = !stillCutMode;
+//        stillCutMode = !stillCutMode;
+        imageMode = false;
+        stillCutMode = true;
         if (stillCutMode) {
             stillCutMode_str = "stillCutMode : true";
         } else {
@@ -92,6 +120,34 @@ void ofApp::keyPressed(int key){
     
     if (key == '_' || key == '-') {
         if (stillCutInterval >= (INTERVAL_MIN + INTERVAL_STEP)) stillCutInterval-=INTERVAL_STEP;
+    }
+    
+    
+    if (key == 'i' || key == 'I') {
+//        imageMode = !imageMode;
+        if (!imageMode) {
+            stillCutMode = false;
+            imageMode = true;
+        
+            if (curImageIdx < IMAGE_IDX_MAX){
+                curImageIdx++;
+            }
+            
+            if (imageMode) {
+                imageMode_str = "imageMode : true";
+            } else {
+                imageMode_str = "imageMode : false";
+            }
+            
+            ofLog(OF_LOG_NOTICE, imageMode_str);
+        }
+    }
+
+
+    if (key == 'v' || key == 'V'){
+        imageMode = false;
+        stillCutMode = false;
+        
     }
     
 }

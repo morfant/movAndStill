@@ -42,4 +42,12 @@ class ofApp : public ofBaseApp{
         float curTimef = 0.0f;
         float prevTimef = 0.0f;
         float timeDiff = 0.0f;
+    
+    
+        const int IMAGE_IDX_MAX = 3;
+        ofImage infoDrawing[4];
+        bool imageMode = false;
+        string imageMode_str = "";
+        int curImageIdx = -1;
+    
 };
